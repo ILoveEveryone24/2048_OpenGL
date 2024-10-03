@@ -268,8 +268,8 @@ int main(){
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	Shader gridShader("./gridShader.ver", "./gridShader.frag");
-	Shader blockShader("./blockShader.ver", "./blockShader.frag");
+	Shader gridShader("./shaders/gridShader.ver", "./shaders/gridShader.frag");
+	Shader blockShader("./shaders/blockShader.ver", "./shaders/blockShader.frag");
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
