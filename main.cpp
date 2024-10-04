@@ -14,6 +14,13 @@ const int GRID_SIZE = 4; //4x4 grid
 const float OFFSET = 0.03f;
 const float SIZE = 2.0f/GRID_SIZE;
 
+enum Direction {
+	UP, 
+	DOWN, 
+	LEFT, 
+	RIGHT
+};
+
 struct Square{
 	public:
 		int x;
@@ -51,18 +58,82 @@ void updateGrid(std::vector<std::vector<bool>> &grid, std::vector<Square> &squar
 		grid[squares[i].x][squares[i].y] = true;
 }
 
+void sortSquares(std::vector<Square> &vect, Direction dir){
+	std::vector<Square> tmpSquares;
+	int vectSize = vect.size();
+	switch(dir){
+		case UP:
+			while(tmpSquares.size() != vectSize){
+				int compareVal = GRID_SIZE;
+				int pos = 0;
+				for(int i = 0; i < vect.size(); i++)
+					if(vect[i].y < compareVal){
+						compareVal = vect[i].y;
+						pos = i;	
+					}
+				tmpSquares.push_back(vect[pos]);
+				vect.erase(vect.begin()+pos);
+			}
+			vect.insert(vect.begin(), tmpSquares.begin(), tmpSquares.end());
+			break;	
+		case DOWN:
+			while(tmpSquares.size() != vectSize){
+				int compareVal = 0;
+				int pos = 0;
+				for(int i = 0; i < vect.size(); i++)
+					if(vect[i].y > compareVal){
+						compareVal = vect[i].y;
+						pos = i;	
+					}
+				tmpSquares.push_back(vect[pos]);
+				vect.erase(vect.begin()+pos);
+			}
+			vect.insert(vect.begin(), tmpSquares.begin(), tmpSquares.end());
+			break;	
+		case LEFT:
+			while(tmpSquares.size() != vectSize){
+				int compareVal = GRID_SIZE;
+				int pos = 0;
+				for(int i = 0; i < vect.size(); i++)
+					if(vect[i].x < compareVal){
+						compareVal = vect[i].x;
+						pos = i;	
+					}
+				tmpSquares.push_back(vect[pos]);
+				vect.erase(vect.begin()+pos);
+			}
+			vect.insert(vect.begin(), tmpSquares.begin(), tmpSquares.end());
+			break;	
+		case RIGHT:
+			while(tmpSquares.size() != vectSize){
+				int compareVal = 0;
+				int pos = 0;
+				for(int i = 0; i < vect.size(); i++)
+					if(vect[i].x > compareVal){
+						compareVal = vect[i].x;
+						pos = i;	
+					}
+				tmpSquares.push_back(vect[pos]);
+				vect.erase(vect.begin()+pos);
+			}
+			vect.insert(vect.begin(), tmpSquares.begin(), tmpSquares.end());
+			break;	
+	}
+}
+
 //Define grid based on other squares position?
 void moveUp(std::vector<Square> &squares, std::vector<std::vector<bool>> &grid){
+	sortSquares(squares, UP);
 	for(int i = 0; i < squares.size(); i++){
 		if(squares[i].y > 0 && !grid[squares[i].x][squares[i].y-1]){
 			squares[i].y--;
 			updateGrid(grid, squares);
 		}
 	}
-
 }
 
 void moveDown(std::vector<Square> &squares, std::vector<std::vector<bool>> &grid){
+	sortSquares(squares, DOWN);
 	for(int i = 0; i < squares.size(); i++){
 		if(squares[i].y < 3 && !grid[squares[i].x][squares[i].y+1]){
 			squares[i].y++;
@@ -72,6 +143,7 @@ void moveDown(std::vector<Square> &squares, std::vector<std::vector<bool>> &grid
 }
 
 void moveLeft(std::vector<Square> &squares, std::vector<std::vector<bool>> &grid){
+	sortSquares(squares, LEFT);
 	for(int i = 0; i < squares.size(); i++){
 		if(squares[i].x > 0 && !grid[squares[i].x-1][squares[i].y]){
 			squares[i].x--;
@@ -81,6 +153,7 @@ void moveLeft(std::vector<Square> &squares, std::vector<std::vector<bool>> &grid
 }
 
 void moveRight(std::vector<Square> &squares, std::vector<std::vector<bool>> &grid){
+	sortSquares(squares, RIGHT);
 	for(int i = 0; i < squares.size(); i++){
 		if(squares[i].x < 3 && !grid[squares[i].x+1][squares[i].y]){
 			squares[i].x++;
@@ -137,8 +210,12 @@ int main(){
 	Square square2(1, 0);
 	square2.addToVBO(blockVertices, 1);
 
+	Square square3(2, 0);
+	square3.addToVBO(blockVertices, 1);
+
 	squares.push_back(square);
 	squares.push_back(square2);
+	squares.push_back(square3);
 	for(int i = 0; i < squares.size(); i++){
 		std::cout << "x: " << squares[i].x;
 		std::cout << "y: " << squares[i].y << std::endl;
@@ -153,7 +230,7 @@ int main(){
 			std::cout << grid[i][j] << std::endl;
 		}
 
-	for(int i = 0; i < 2; i++){
+	for(int i = 0; i < 3; i++){
 		//0, 2, 1
 		//2, 1, 3
 		blockIndices.push_back(glm::uvec3(i * GRID_SIZE, i * GRID_SIZE + 2, i * GRID_SIZE + 1));
