@@ -1,7 +1,7 @@
 #include <iostream>
 #include <glad/glad.h>
 #include <SDL2/SDL.h>
-#include "Shader.h"
+#include "shaders/Shader.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <vector>
@@ -18,16 +18,23 @@ struct Square{
 	public:
 		int x;
 		int y;
-		
+	private:
+		int number = 2;
+
+	public:
 		Square(int posX, int posY)
 			: x(posX), y(posY) {}
+
+		int getNumber(){
+			return this->number;	
+		}
 
 		void addToVBO(std::vector<glm::vec3> &vect, int depth){
 				vect.push_back(glm::vec3(-1.0f + this->x*SIZE + OFFSET, 1.0f - this->y*SIZE - OFFSET, 0.99f - 0.01f * depth)); //Top left
 				vect.push_back(glm::vec3(-1.0f + this->x*SIZE + OFFSET, 1.0f - this->y*SIZE - SIZE + OFFSET, 0.99f - 0.01f * depth)); //Bottom left
 				vect.push_back(glm::vec3(-1.0f + this->x*SIZE + SIZE - OFFSET, 1.0f - this->y*SIZE - OFFSET, 0.99f - 0.01f * depth)); //Top right
 				vect.push_back(glm::vec3(-1.0f + this->x*SIZE + SIZE - OFFSET, 1.0f - this->y*SIZE - SIZE + OFFSET, 0.99f - 0.01f * depth)); //Bottom right
-			}
+		}
 		//Maybe add later		
 		void addToEBO(std::vector<glm::uvec3> &vect){
 		
@@ -35,122 +42,53 @@ struct Square{
 
 };
 
+void updateGrid(std::vector<std::vector<bool>> &grid, std::vector<Square> &squares){
+	for(int i = 0; i < GRID_SIZE; i++)
+		for(int j = 0; j < GRID_SIZE; j++)
+			grid[i][j] = false;
+
+	for(int i = 0; i < squares.size(); i++)
+		grid[squares[i].x][squares[i].y] = true;
+}
+
 //Define grid based on other squares position?
-
-void moveDown(std::vector<glm::vec3> &vect){
-	int cnt = 0;
-	for(int i = 0; i < vect.size(); i++){
-		if(cnt != i/4)
-			cnt++;
-		switch(i - 4*cnt){
-			case 0:
-				if(vect[i].y > -1.0 + OFFSET + SIZE)
-					vect[i].y -= SIZE;
-				break;	
-			case 1:
-				if(vect[i].y > -1.0 + OFFSET)
-					vect[i].y -= SIZE;
-				break;	
-			case 2:
-				if(vect[i].y > -1.0 + OFFSET + SIZE)
-					vect[i].y -= SIZE;
-				break;	
-			case 3:
-				if(vect[i].y > -1.0 + OFFSET)
-					vect[i].y -= SIZE;
-				break;	
-			default:
-				break;	
-		}
-	}
-}
-
-void moveUp(std::vector<glm::vec3> &vect){
-	int cnt = 0;
-	for(int i = 0; i < vect.size(); i++){
-		if(cnt != i/4)
-			cnt++;
-		switch(i - 4*cnt){
-			case 0:
-				if(vect[i].y < 1.0 - OFFSET)
-					vect[i].y += SIZE;
-				break;	
-			case 1:
-				if(vect[i].y < 1.0 - OFFSET - SIZE)
-					vect[i].y += SIZE;
-				break;	
-			case 2:
-				if(vect[i].y < 1.0 - OFFSET)
-					vect[i].y += SIZE;
-				break;	
-			case 3:
-				if(vect[i].y < 1.0 - OFFSET - SIZE)
-					vect[i].y += SIZE;
-				break;	
-			default:
-				break;	
+void moveUp(std::vector<Square> &squares, std::vector<std::vector<bool>> &grid){
+	for(int i = 0; i < squares.size(); i++){
+		if(squares[i].y > 0 && !grid[squares[i].x][squares[i].y-1]){
+			squares[i].y--;
+			updateGrid(grid, squares);
 		}
 	}
 
 }
 
-void moveLeft(std::vector<glm::vec3> &vect){
-	int cnt = 0;
-	for(int i = 0; i < vect.size(); i++){
-		if(cnt != i/4)
-			cnt++;
-		switch(i - 4*cnt){
-			case 0:
-				if(vect[i].x > -1.0 + OFFSET)
-					vect[i].x -= SIZE;
-				break;	
-			case 1:
-				if(vect[i].x > -1.0 + OFFSET)
-					vect[i].x -= SIZE;
-				break;	
-			case 2:
-				if(vect[i].x > -1.0 + OFFSET + SIZE)
-					vect[i].x -= SIZE;
-				break;	
-			case 3:
-				if(vect[i].x > -1.0 + OFFSET + SIZE)
-					vect[i].x -= SIZE;
-				break;	
-			default:
-				break;	
+void moveDown(std::vector<Square> &squares, std::vector<std::vector<bool>> &grid){
+	for(int i = 0; i < squares.size(); i++){
+		if(squares[i].y < 3 && !grid[squares[i].x][squares[i].y+1]){
+			squares[i].y++;
+			updateGrid(grid, squares);
 		}
 	}
-
 }
 
-void moveRight(std::vector<glm::vec3> &vect){
-	int cnt = 0;
-	for(int i = 0; i < vect.size(); i++){
-		if(cnt != i/4)
-			cnt++;
-		switch(i - 4*cnt){
-			case 0:
-				if(vect[i].x < 1.0 - OFFSET - SIZE)
-					vect[i].x += SIZE;
-				break;	
-			case 1:
-				if(vect[i].x < 1.0 - OFFSET - SIZE)
-					vect[i].x += SIZE;
-				break;	
-			case 2:
-				if(vect[i].x < 1.0 - OFFSET)
-					vect[i].x += SIZE;
-				break;	
-			case 3:
-				if(vect[i].x < 1.0 - OFFSET)
-					vect[i].x += SIZE;
-				break;	
-			default:
-				break;	
+void moveLeft(std::vector<Square> &squares, std::vector<std::vector<bool>> &grid){
+	for(int i = 0; i < squares.size(); i++){
+		if(squares[i].x > 0 && !grid[squares[i].x-1][squares[i].y]){
+			squares[i].x--;
+			updateGrid(grid, squares);
 		}
 	}
-
 }
+
+void moveRight(std::vector<Square> &squares, std::vector<std::vector<bool>> &grid){
+	for(int i = 0; i < squares.size(); i++){
+		if(squares[i].x < 3 && !grid[squares[i].x+1][squares[i].y]){
+			squares[i].x++;
+			updateGrid(grid, squares);
+		}
+	}
+}
+
 
 int main(){
 
@@ -163,6 +101,15 @@ int main(){
 	std::vector<glm::uvec3> blockIndices;
 
 	std::vector<Square> squares;
+	std::vector<std::vector<bool>> grid;
+
+	for(int i = 0; i < GRID_SIZE; i++){
+		std::vector<bool> gridBlocks;
+		for(int j = 0; j < GRID_SIZE; j++){
+			gridBlocks.push_back(false);
+		}
+		grid.push_back(gridBlocks);
+	}
 
 	srand(time(NULL));
 	
@@ -171,7 +118,7 @@ int main(){
 			Square square(i, j);
 			square.addToVBO(gridVertices, 0);
 		}
-
+	
 
 	int randX = rand() % 4;
 	int randY = rand() % 4;
@@ -196,6 +143,16 @@ int main(){
 		std::cout << "x: " << squares[i].x;
 		std::cout << "y: " << squares[i].y << std::endl;
 	}
+
+	updateGrid(grid, squares);
+
+	for(int i = 0; i < GRID_SIZE; i++)
+		for(int j = 0; j < GRID_SIZE; j++){
+			std::cout << "x: " << i << " ";
+			std::cout << "y: " << j << std::endl;
+			std::cout << grid[i][j] << std::endl;
+		}
+
 	for(int i = 0; i < 2; i++){
 		//0, 2, 1
 		//2, 1, 3
@@ -284,6 +241,8 @@ int main(){
 	while(isRunning){
 		glClearColor(155.0f/255.0f, 136.0f/255.0f, 120.0f/255.0f, 1.0f);	
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		for(int i = 0; i < squares.size(); i++)
+			std::cout << squares[i].x << " " << squares[i].y << std::endl;
 
 		while(SDL_PollEvent(&event)){
 			switch(event.type){
@@ -293,16 +252,28 @@ int main(){
 				case SDL_KEYDOWN:
 					switch(event.key.keysym.sym){
 						case SDLK_UP:
-							moveUp(blockVertices);
+							moveUp(squares, grid);
+							blockVertices.clear();
+							for(int i = 0; i < squares.size(); i++)
+								squares[i].addToVBO(blockVertices, 1);
 							break;
 						case SDLK_DOWN:
-							moveDown(blockVertices);
+							moveDown(squares, grid);
+							blockVertices.clear();
+							for(int i = 0; i < squares.size(); i++)
+								squares[i].addToVBO(blockVertices, 1);
 							break;
 						case SDLK_LEFT:
-							moveLeft(blockVertices);
+							moveLeft(squares, grid);
+							blockVertices.clear();
+							for(int i = 0; i < squares.size(); i++)
+								squares[i].addToVBO(blockVertices, 1);
 							break;
 						case SDLK_RIGHT:
-							moveRight(blockVertices);
+							moveRight(squares, grid);
+							blockVertices.clear();
+							for(int i = 0; i < squares.size(); i++)
+								squares[i].addToVBO(blockVertices, 1);
 							break;
 						default:
 							break;	
