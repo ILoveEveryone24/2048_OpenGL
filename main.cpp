@@ -125,7 +125,7 @@ void sortSquares(std::vector<Square> &vect, Direction dir){
 void moveUp(std::vector<Square> &squares, std::vector<std::vector<bool>> &grid){
 	sortSquares(squares, UP);
 	for(int i = 0; i < squares.size(); i++){
-		if(squares[i].y > 0 && !grid[squares[i].x][squares[i].y-1]){
+		while(squares[i].y > 0 && !grid[squares[i].x][squares[i].y-1]){
 			squares[i].y--;
 			updateGrid(grid, squares);
 		}
@@ -135,7 +135,7 @@ void moveUp(std::vector<Square> &squares, std::vector<std::vector<bool>> &grid){
 void moveDown(std::vector<Square> &squares, std::vector<std::vector<bool>> &grid){
 	sortSquares(squares, DOWN);
 	for(int i = 0; i < squares.size(); i++){
-		if(squares[i].y < 3 && !grid[squares[i].x][squares[i].y+1]){
+		while(squares[i].y < 3 && !grid[squares[i].x][squares[i].y+1]){
 			squares[i].y++;
 			updateGrid(grid, squares);
 		}
@@ -145,7 +145,7 @@ void moveDown(std::vector<Square> &squares, std::vector<std::vector<bool>> &grid
 void moveLeft(std::vector<Square> &squares, std::vector<std::vector<bool>> &grid){
 	sortSquares(squares, LEFT);
 	for(int i = 0; i < squares.size(); i++){
-		if(squares[i].x > 0 && !grid[squares[i].x-1][squares[i].y]){
+		while(squares[i].x > 0 && !grid[squares[i].x-1][squares[i].y]){
 			squares[i].x--;
 			updateGrid(grid, squares);
 		}
@@ -155,7 +155,7 @@ void moveLeft(std::vector<Square> &squares, std::vector<std::vector<bool>> &grid
 void moveRight(std::vector<Square> &squares, std::vector<std::vector<bool>> &grid){
 	sortSquares(squares, RIGHT);
 	for(int i = 0; i < squares.size(); i++){
-		if(squares[i].x < 3 && !grid[squares[i].x+1][squares[i].y]){
+		while(squares[i].x < 3 && !grid[squares[i].x+1][squares[i].y]){
 			squares[i].x++;
 			updateGrid(grid, squares);
 		}
