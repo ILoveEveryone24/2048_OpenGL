@@ -18,7 +18,8 @@ enum Direction {
 	UP, 
 	DOWN, 
 	LEFT, 
-	RIGHT
+	RIGHT,
+	GRID
 };
 
 struct Square{
@@ -34,6 +35,9 @@ struct Square{
 
 		int getNumber(){
 			return this->number;	
+		}
+		void setNumber(int number){
+			this->number = number;
 		}
 
 		void addSquareToGrid(std::vector<glm::vec3> &vertices, std::vector<glm::uvec3> &indices, int depth){
@@ -123,52 +127,164 @@ void sortSquares(std::vector<Square> &vect, Direction dir){
 			}
 			vect.insert(vect.begin(), tmpSquares.begin(), tmpSquares.end());
 			break;	
+		case GRID:
+			while(tmpSquares.size() != vectSize){
+				int compareValX = GRID_SIZE;
+				int compareValY = GRID_SIZE;
+				int pos = 0;
+				for(int i = 0; i < vect.size(); i++){
+					if(vect[i].x < compareValX){
+						compareValX = vect[i].x;
+					}
+				}
+				for(int i = 0; i < vect.size(); i++){
+					if(vect[i].x == compareValX && vect[i].y < compareValY){
+						compareValY = vect[i].y;
+						pos = i;	
+					}
+				}
+				tmpSquares.push_back(vect[pos]);
+				vect.erase(vect.begin()+pos);
+			}
+			vect.insert(vect.begin(), tmpSquares.begin(), tmpSquares.end());
+		/*	for(int i = 0; i < vect.size(); i++)
+				std::cout << "square x: " << vect[i].x << " square y: " << vect[i].y << std::endl;*/
+			for(int i = 0; i < vect.size(); i++)
+				std::cout << "Square x: " << vect[i].x << "Square y: " << vect[i].y << "Square number: " << vect[i].getNumber() << std::endl;
+			break;	
 	}
 }
 
-//Define grid based on other squares position?
+void addRandomSquare(std::vector<Square> &squares, std::vector<std::vector<bool>> &grid, bool moved){
+	int randX = rand() % 4;
+	int randY = rand() % 4;
+	int cnt = 0;
+	bool notFull = false;
+	if(moved){
+		for(int i = 0; i < GRID_SIZE; i++)
+			for(int j = 0; j < GRID_SIZE; j++)
+				if(!grid[i][j])
+					notFull = true;
+		if(notFull){
+			while(grid[randX][randY]){
+				randX = rand() % 4;
+				randY = rand() % 4;
+				cnt++;
+			}
+
+			std::cout << "random run: " << cnt << std::endl;
+			Square square(randX, randY);
+			squares.push_back(square);
+			updateGrid(grid, squares);
+		}
+	}
+}
+
 void moveUp(std::vector<Square> &squares, std::vector<std::vector<bool>> &grid){
+	bool moved = false;
 	sortSquares(squares, UP);
 	for(int i = 0; i < squares.size(); i++){
 		while(squares[i].y > 0 && !grid[squares[i].x][squares[i].y-1]){
 			squares[i].y--;
+			moved = true;
 			updateGrid(grid, squares);
 		}
+		//TESTING
+		if(squares[i].y > 0)
+			if(grid[squares[i].x][squares[i].y-1]){
+				int adjSquareID = 0;
+				for(int j = 0; j < squares.size(); j++)
+					if(squares[j].x == squares[i].x && squares[j].y == squares[i].y-1)
+						adjSquareID = j;
+				if(squares[adjSquareID].getNumber() == squares[i].getNumber()){
+					squares[adjSquareID].setNumber(squares[adjSquareID].getNumber()*2);
+					squares.erase(squares.begin()+i);
+				}
+			}
+		//TESTING
 	}
+	addRandomSquare(squares, grid, moved);
 }
 
 void moveDown(std::vector<Square> &squares, std::vector<std::vector<bool>> &grid){
+	bool moved = false;
 	sortSquares(squares, DOWN);
 	for(int i = 0; i < squares.size(); i++){
 		while(squares[i].y < 3 && !grid[squares[i].x][squares[i].y+1]){
 			squares[i].y++;
+			moved = true;
 			updateGrid(grid, squares);
 		}
+		//TESTING
+		if(squares[i].y < 3)
+			if(grid[squares[i].x][squares[i].y+1]){
+				int adjSquareID = 0;
+				for(int j = 0; j < squares.size(); j++)
+					if(squares[j].x == squares[i].x && squares[j].y == squares[i].y+1)
+						adjSquareID = j;
+				if(squares[adjSquareID].getNumber() == squares[i].getNumber()){
+					squares[adjSquareID].setNumber(squares[adjSquareID].getNumber()*2);
+					squares.erase(squares.begin()+i);
+				}
+			}
+		//TESTING
 	}
+	addRandomSquare(squares, grid, moved);
 }
 
 void moveLeft(std::vector<Square> &squares, std::vector<std::vector<bool>> &grid){
+	bool moved = false;
 	sortSquares(squares, LEFT);
 	for(int i = 0; i < squares.size(); i++){
 		while(squares[i].x > 0 && !grid[squares[i].x-1][squares[i].y]){
 			squares[i].x--;
+			moved = true;
 			updateGrid(grid, squares);
 		}
+		//TESTING
+		if(squares[i].x > 0)
+			if(grid[squares[i].x-1][squares[i].y]){
+				int adjSquareID = 0;
+				for(int j = 0; j < squares.size(); j++)
+					if(squares[j].x == squares[i].x-1 && squares[j].y == squares[i].y)
+						adjSquareID = j;
+				if(squares[adjSquareID].getNumber() == squares[i].getNumber()){
+					squares[adjSquareID].setNumber(squares[adjSquareID].getNumber()*2);
+					squares.erase(squares.begin()+i);
+				}
+			}
+		//TESTING
 	}
+	addRandomSquare(squares, grid, moved);
 }
 
 void moveRight(std::vector<Square> &squares, std::vector<std::vector<bool>> &grid){
+	bool moved = false;
 	sortSquares(squares, RIGHT);
 	for(int i = 0; i < squares.size(); i++){
 		while(squares[i].x < 3 && !grid[squares[i].x+1][squares[i].y]){
 			squares[i].x++;
+			moved = true;
 			updateGrid(grid, squares);
 		}
+		//TESTING
+		if(squares[i].x < 3)
+			if(grid[squares[i].x+1][squares[i].y]){
+				int adjSquareID = 0;
+				for(int j = 0; j < squares.size(); j++)
+					if(squares[j].x == squares[i].x+1 && squares[j].y == squares[i].y)
+						adjSquareID = j;
+				if(squares[adjSquareID].getNumber() == squares[i].getNumber()){
+					squares[adjSquareID].setNumber(squares[adjSquareID].getNumber()*2);
+					squares.erase(squares.begin()+i);
+				}
+			}
+		//TESTING
 	}
+	addRandomSquare(squares, grid, moved);
 }
 
 int main(){
-
 	unsigned int gridVBO, blockVBO, gridVAO, blockVAO, gridEBO, blockEBO;
 	
 	std::vector<glm::vec3> gridVertices;
@@ -224,28 +340,10 @@ int main(){
 	squares.push_back(square2);
 	squares.push_back(square3);
 
-	for(int i = 0; i < squares.size(); i++){
-		std::cout << "x: " << squares[i].x;
-		std::cout << "y: " << squares[i].y << std::endl;
-	}
+	for(int i = 0; i < squares.size(); i++)
+		std::cout << squares[i].getNumber() << std::endl;
 
 	updateGrid(grid, squares);
-
-	for(int i = 0; i < GRID_SIZE; i++)
-		for(int j = 0; j < GRID_SIZE; j++){
-			std::cout << "x: " << i << " ";
-			std::cout << "y: " << j << std::endl;
-			std::cout << grid[i][j] << std::endl;
-		}
-
-
-
-	/*for(int i = 0; i < GRID_SIZE*GRID_SIZE; i++){
-		//0, 2, 1
-		//2, 1, 3
-		gridIndices.push_back(glm::uvec3(i * GRID_SIZE, i * GRID_SIZE + 2, i * GRID_SIZE + 1));
-		gridIndices.push_back(glm::uvec3(i * GRID_SIZE + 2, i * GRID_SIZE + 1, i * GRID_SIZE + 3));
-	}*/
 
 	if(SDL_Init(SDL_INIT_VIDEO) > 0){
 		std::cout << "SDL_Init ERROR: " << SDL_GetError() << std::endl;	
@@ -320,13 +418,31 @@ int main(){
 	bool isRunning = true;
 	SDL_Event event;
 
+	//int blockColorLocation = glGetUniformLocation(blockShader.ID, "blockColor");
+	int blockNumbersLocation = glGetUniformLocation(blockShader.ID, "blockNumbers");
+	int blockNumbers[GRID_SIZE*GRID_SIZE];
+
+	sortSquares(squares, GRID);
+
+	for(int i = 0; i < GRID_SIZE*GRID_SIZE; i++)
+		blockNumbers[i] = 0;
+
+	for(int i = 0; i < squares.size(); i++){
+		blockNumbers[i] = squares[i].getNumber();
+		std::cout << "sqr n: " << squares[i].y + squares[i].x*GRID_SIZE << std::endl;
+	}
+
+	blockVertices.clear();
+	blockIndices.clear();
+	for(int i = 0; i < squares.size(); i++)
+		squares[i].addSquareToGrid(blockVertices, blockIndices, 1);
+
+	glm::vec3 blockColor;
 
 	while(isRunning){
 		glClearColor(155.0f/255.0f, 136.0f/255.0f, 120.0f/255.0f, 1.0f);	
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		for(int i = 0; i < squares.size(); i++)
-			std::cout << squares[i].x << " " << squares[i].y << std::endl;
-
+	
 		while(SDL_PollEvent(&event)){
 			switch(event.type){
 				case SDL_QUIT:
@@ -334,10 +450,13 @@ int main(){
 					break;
 				case SDL_KEYDOWN:
 					switch(event.key.keysym.sym){
+						case SDLK_r:
+							break;
 						case SDLK_UP:
 							moveUp(squares, grid);
 							blockVertices.clear();
 							blockIndices.clear();
+							sortSquares(squares, GRID);
 							for(int i = 0; i < squares.size(); i++)
 								squares[i].addSquareToGrid(blockVertices, blockIndices, 1);
 							break;
@@ -345,6 +464,7 @@ int main(){
 							moveDown(squares, grid);
 							blockVertices.clear();
 							blockIndices.clear();
+							sortSquares(squares, GRID);
 							for(int i = 0; i < squares.size(); i++)
 								squares[i].addSquareToGrid(blockVertices, blockIndices, 1);
 							break;
@@ -352,6 +472,7 @@ int main(){
 							moveLeft(squares, grid);
 							blockVertices.clear();
 							blockIndices.clear();
+							sortSquares(squares, GRID);
 							for(int i = 0; i < squares.size(); i++)
 								squares[i].addSquareToGrid(blockVertices, blockIndices, 1);
 							break;
@@ -359,6 +480,7 @@ int main(){
 							moveRight(squares, grid);
 							blockVertices.clear();
 							blockIndices.clear();
+							sortSquares(squares, GRID);
 							for(int i = 0; i < squares.size(); i++)
 								squares[i].addSquareToGrid(blockVertices, blockIndices, 1);
 							break;
@@ -369,6 +491,12 @@ int main(){
 					break;	
 			}	
 		}
+		sortSquares(squares, GRID);
+
+		for(int i = 0; i < squares.size(); i++)
+			blockNumbers[i] = squares[i].getNumber();
+
+		
 		glBindBuffer(GL_ARRAY_BUFFER, blockVBO);
 		glBufferSubData(GL_ARRAY_BUFFER, 0, blockVertices.size()*sizeof(glm::vec3), blockVertices.data());
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -376,7 +504,6 @@ int main(){
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, blockEBO);
 		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, blockIndices.size()*sizeof(glm::uvec3), blockIndices.data());
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
 
 		//draw grid
 		
@@ -389,6 +516,10 @@ int main(){
 		//draw block
 		blockLength = (GLuint)blockIndices.size() * 3;
 		blockShader.use();
+
+		//glUniform3f(blockColorLocation, 0.5f, 0.5f, 0.3f);
+		glUniform1iv(blockNumbersLocation, 16, blockNumbers);
+
 		glBindVertexArray(blockVAO);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, blockEBO);
 
