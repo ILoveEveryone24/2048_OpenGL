@@ -36,15 +36,20 @@ struct Square{
 			return this->number;	
 		}
 
-		void addToVBO(std::vector<glm::vec3> &vect, int depth){
-				vect.push_back(glm::vec3(-1.0f + this->x*SIZE + OFFSET, 1.0f - this->y*SIZE - OFFSET, 0.99f - 0.01f * depth)); //Top left
-				vect.push_back(glm::vec3(-1.0f + this->x*SIZE + OFFSET, 1.0f - this->y*SIZE - SIZE + OFFSET, 0.99f - 0.01f * depth)); //Bottom left
-				vect.push_back(glm::vec3(-1.0f + this->x*SIZE + SIZE - OFFSET, 1.0f - this->y*SIZE - OFFSET, 0.99f - 0.01f * depth)); //Top right
-				vect.push_back(glm::vec3(-1.0f + this->x*SIZE + SIZE - OFFSET, 1.0f - this->y*SIZE - SIZE + OFFSET, 0.99f - 0.01f * depth)); //Bottom right
-		}
-		//Maybe add later		
-		void addToEBO(std::vector<glm::uvec3> &vect){
-		
+		void addSquareToGrid(std::vector<glm::vec3> &vertices, std::vector<glm::uvec3> &indices, int depth){
+			vertices.push_back(glm::vec3(-1.0f + this->x*SIZE + OFFSET, 1.0f - this->y*SIZE - OFFSET, 0.99f - 0.01f * depth)); //Top left
+			vertices.push_back(glm::vec3(-1.0f + this->x*SIZE + OFFSET, 1.0f - this->y*SIZE - SIZE + OFFSET, 0.99f - 0.01f * depth)); //Bottom left
+			vertices.push_back(glm::vec3(-1.0f + this->x*SIZE + SIZE - OFFSET, 1.0f - this->y*SIZE - OFFSET, 0.99f - 0.01f * depth)); //Top right
+			vertices.push_back(glm::vec3(-1.0f + this->x*SIZE + SIZE - OFFSET, 1.0f - this->y*SIZE - SIZE + OFFSET, 0.99f - 0.01f * depth)); //Bottom right
+			
+			int i;
+			if(indices.size() < 1)
+				i = 0;
+			else
+				i = indices.back().z + 1;
+
+			indices.push_back(glm::uvec3(i, i + 2, i + 1));
+			indices.push_back(glm::uvec3(i + 2, i + 1, i + 3));
 		}
 
 };
@@ -162,7 +167,6 @@ void moveRight(std::vector<Square> &squares, std::vector<std::vector<bool>> &gri
 	}
 }
 
-
 int main(){
 
 	unsigned int gridVBO, blockVBO, gridVAO, blockVAO, gridEBO, blockEBO;
@@ -189,7 +193,7 @@ int main(){
 	for(int i = 0; i < GRID_SIZE; i++)
 		for(int j = 0; j < GRID_SIZE; j++){
 			Square square(i, j);
-			square.addToVBO(gridVertices, 0);
+			square.addSquareToGrid(gridVertices, gridIndices, 0);
 		}
 	
 
@@ -197,7 +201,7 @@ int main(){
 	int randY = rand() % 4;
 	//Square square(randX, randY);
 	Square square(1, 1);
-	square.addToVBO(blockVertices, 1);
+	square.addSquareToGrid(blockVertices, blockIndices, 1);
 	
 	int randX2 = rand() % 4;
 	int randY2 = rand() % 4;
@@ -208,14 +212,18 @@ int main(){
 
 	//Square square2(randX2, randY2);
 	Square square2(1, 0);
-	square2.addToVBO(blockVertices, 1);
+	square2.addSquareToGrid(blockVertices, blockIndices, 1);
 
 	Square square3(2, 0);
-	square3.addToVBO(blockVertices, 1);
+	square3.addSquareToGrid(blockVertices, blockIndices, 1);
+	Square squareT(0,0);
+	squares.push_back(squareT);
+	squareT.addSquareToGrid(blockVertices, blockIndices, 1);
 
 	squares.push_back(square);
 	squares.push_back(square2);
 	squares.push_back(square3);
+
 	for(int i = 0; i < squares.size(); i++){
 		std::cout << "x: " << squares[i].x;
 		std::cout << "y: " << squares[i].y << std::endl;
@@ -230,20 +238,14 @@ int main(){
 			std::cout << grid[i][j] << std::endl;
 		}
 
-	for(int i = 0; i < 3; i++){
-		//0, 2, 1
-		//2, 1, 3
-		blockIndices.push_back(glm::uvec3(i * GRID_SIZE, i * GRID_SIZE + 2, i * GRID_SIZE + 1));
-		blockIndices.push_back(glm::uvec3(i * GRID_SIZE + 2, i * GRID_SIZE + 1, i * GRID_SIZE + 3));
-	}
 
 
-	for(int i = 0; i < GRID_SIZE*GRID_SIZE; i++){
+	/*for(int i = 0; i < GRID_SIZE*GRID_SIZE; i++){
 		//0, 2, 1
 		//2, 1, 3
 		gridIndices.push_back(glm::uvec3(i * GRID_SIZE, i * GRID_SIZE + 2, i * GRID_SIZE + 1));
 		gridIndices.push_back(glm::uvec3(i * GRID_SIZE + 2, i * GRID_SIZE + 1, i * GRID_SIZE + 3));
-	}
+	}*/
 
 	if(SDL_Init(SDL_INIT_VIDEO) > 0){
 		std::cout << "SDL_Init ERROR: " << SDL_GetError() << std::endl;	
@@ -295,18 +297,21 @@ int main(){
 
 	glBindVertexArray(blockVAO);
 	glBindBuffer(GL_ARRAY_BUFFER, blockVBO);
-	glBufferData(GL_ARRAY_BUFFER, blockVertices.size() * sizeof(glm::vec3), blockVertices.data(), GL_STATIC_DRAW);
+	//glBufferData(GL_ARRAY_BUFFER, blockVertices.size() * sizeof(glm::vec3), blockVertices.data(), GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, GRID_SIZE*GRID_SIZE*4 * sizeof(glm::vec3), blockVertices.data(), GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, blockEBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, blockIndices.size() * sizeof(glm::uvec3), blockIndices.data(), GL_STATIC_DRAW);
+	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, blockIndices.size() * sizeof(glm::uvec3), blockIndices.data(), GL_DYNAMIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, GRID_SIZE*GRID_SIZE*2 * sizeof(glm::uvec3), blockIndices.data(), GL_DYNAMIC_DRAW);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
+
 
 	Shader gridShader("./shaders/gridShader.ver", "./shaders/gridShader.frag");
 	Shader blockShader("./shaders/blockShader.ver", "./shaders/blockShader.frag");
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
+	
 	GLuint gridLength = (GLuint)gridIndices.size() * 3;
 	GLuint blockLength = (GLuint)blockIndices.size() * 3;
 
@@ -314,6 +319,7 @@ int main(){
 
 	bool isRunning = true;
 	SDL_Event event;
+
 
 	while(isRunning){
 		glClearColor(155.0f/255.0f, 136.0f/255.0f, 120.0f/255.0f, 1.0f);	
@@ -331,26 +337,30 @@ int main(){
 						case SDLK_UP:
 							moveUp(squares, grid);
 							blockVertices.clear();
+							blockIndices.clear();
 							for(int i = 0; i < squares.size(); i++)
-								squares[i].addToVBO(blockVertices, 1);
+								squares[i].addSquareToGrid(blockVertices, blockIndices, 1);
 							break;
 						case SDLK_DOWN:
 							moveDown(squares, grid);
 							blockVertices.clear();
+							blockIndices.clear();
 							for(int i = 0; i < squares.size(); i++)
-								squares[i].addToVBO(blockVertices, 1);
+								squares[i].addSquareToGrid(blockVertices, blockIndices, 1);
 							break;
 						case SDLK_LEFT:
 							moveLeft(squares, grid);
 							blockVertices.clear();
+							blockIndices.clear();
 							for(int i = 0; i < squares.size(); i++)
-								squares[i].addToVBO(blockVertices, 1);
+								squares[i].addSquareToGrid(blockVertices, blockIndices, 1);
 							break;
 						case SDLK_RIGHT:
 							moveRight(squares, grid);
 							blockVertices.clear();
+							blockIndices.clear();
 							for(int i = 0; i < squares.size(); i++)
-								squares[i].addToVBO(blockVertices, 1);
+								squares[i].addSquareToGrid(blockVertices, blockIndices, 1);
 							break;
 						default:
 							break;	
@@ -363,6 +373,10 @@ int main(){
 		glBufferSubData(GL_ARRAY_BUFFER, 0, blockVertices.size()*sizeof(glm::vec3), blockVertices.data());
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, blockEBO);
+		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, blockIndices.size()*sizeof(glm::uvec3), blockIndices.data());
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
 
 		//draw grid
 		
@@ -373,6 +387,7 @@ int main(){
 		glDrawElements(GL_TRIANGLES, gridLength, GL_UNSIGNED_INT, 0);
 		
 		//draw block
+		blockLength = (GLuint)blockIndices.size() * 3;
 		blockShader.use();
 		glBindVertexArray(blockVAO);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, blockEBO);
