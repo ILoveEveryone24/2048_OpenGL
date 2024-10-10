@@ -190,17 +190,17 @@ void moveUp(std::vector<Square> &squares, std::vector<std::vector<bool>> &grid){
 			updateGrid(grid, squares);
 		}
 		//TESTING
-		if(squares[i].y > 0)
-			if(grid[squares[i].x][squares[i].y-1]){
-				int adjSquareID = 0;
-				for(int j = 0; j < squares.size(); j++)
-					if(squares[j].x == squares[i].x && squares[j].y == squares[i].y-1)
-						adjSquareID = j;
-				if(squares[adjSquareID].getNumber() == squares[i].getNumber()){
-					squares[adjSquareID].setNumber(squares[adjSquareID].getNumber()*2);
-					squares.erase(squares.begin()+i);
-				}
+		if(squares[i].y > 0){
+			int adjSquareID = 0;
+			for(int j = 0; j < squares.size(); j++)
+				if(squares[j].x == squares[i].x && squares[j].y == squares[i].y-1)
+					adjSquareID = j;
+			if(squares[adjSquareID].getNumber() == squares[i].getNumber()){
+				squares[adjSquareID].setNumber(squares[adjSquareID].getNumber()*2);
+				squares.erase(squares.begin()+i);
+				i--;
 			}
+		}
 		//TESTING
 	}
 	addRandomSquare(squares, grid, moved);
@@ -216,17 +216,17 @@ void moveDown(std::vector<Square> &squares, std::vector<std::vector<bool>> &grid
 			updateGrid(grid, squares);
 		}
 		//TESTING
-		if(squares[i].y < 3)
-			if(grid[squares[i].x][squares[i].y+1]){
-				int adjSquareID = 0;
-				for(int j = 0; j < squares.size(); j++)
-					if(squares[j].x == squares[i].x && squares[j].y == squares[i].y+1)
-						adjSquareID = j;
-				if(squares[adjSquareID].getNumber() == squares[i].getNumber()){
-					squares[adjSquareID].setNumber(squares[adjSquareID].getNumber()*2);
-					squares.erase(squares.begin()+i);
-				}
+		if(squares[i].y < 3){
+			int adjSquareID = 0;
+			for(int j = 0; j < squares.size(); j++)
+				if(squares[j].x == squares[i].x && squares[j].y == squares[i].y+1)
+					adjSquareID = j;
+			if(squares[adjSquareID].getNumber() == squares[i].getNumber()){
+				squares[adjSquareID].setNumber(squares[adjSquareID].getNumber()*2);
+				squares.erase(squares.begin()+i);
+				i--;
 			}
+		}
 		//TESTING
 	}
 	addRandomSquare(squares, grid, moved);
@@ -242,17 +242,17 @@ void moveLeft(std::vector<Square> &squares, std::vector<std::vector<bool>> &grid
 			updateGrid(grid, squares);
 		}
 		//TESTING
-		if(squares[i].x > 0)
-			if(grid[squares[i].x-1][squares[i].y]){
-				int adjSquareID = 0;
-				for(int j = 0; j < squares.size(); j++)
-					if(squares[j].x == squares[i].x-1 && squares[j].y == squares[i].y)
-						adjSquareID = j;
-				if(squares[adjSquareID].getNumber() == squares[i].getNumber()){
-					squares[adjSquareID].setNumber(squares[adjSquareID].getNumber()*2);
-					squares.erase(squares.begin()+i);
-				}
+		if(squares[i].x > 0){
+			int adjSquareID = 0;
+			for(int j = 0; j < squares.size(); j++)
+				if(squares[j].x == squares[i].x-1 && squares[j].y == squares[i].y)
+					adjSquareID = j;
+			if(squares[adjSquareID].getNumber() == squares[i].getNumber()){
+				squares[adjSquareID].setNumber(squares[adjSquareID].getNumber()*2);
+				squares.erase(squares.begin()+i);
+				i--;
 			}
+		}
 		//TESTING
 	}
 	addRandomSquare(squares, grid, moved);
@@ -268,17 +268,17 @@ void moveRight(std::vector<Square> &squares, std::vector<std::vector<bool>> &gri
 			updateGrid(grid, squares);
 		}
 		//TESTING
-		if(squares[i].x < 3)
-			if(grid[squares[i].x+1][squares[i].y]){
-				int adjSquareID = 0;
-				for(int j = 0; j < squares.size(); j++)
-					if(squares[j].x == squares[i].x+1 && squares[j].y == squares[i].y)
-						adjSquareID = j;
-				if(squares[adjSquareID].getNumber() == squares[i].getNumber()){
-					squares[adjSquareID].setNumber(squares[adjSquareID].getNumber()*2);
-					squares.erase(squares.begin()+i);
-				}
+		if(squares[i].x < 3){
+			int adjSquareID = 0;
+			for(int j = 0; j < squares.size(); j++)
+				if(squares[j].x == squares[i].x+1 && squares[j].y == squares[i].y)
+					adjSquareID = j;
+			if(squares[adjSquareID].getNumber() == squares[i].getNumber()){
+				squares[adjSquareID].setNumber(squares[adjSquareID].getNumber()*2);
+				squares.erase(squares.begin()+i);
+				i--;
 			}
+		}
 		//TESTING
 	}
 	addRandomSquare(squares, grid, moved);
@@ -439,6 +439,8 @@ int main(){
 
 	glm::vec3 blockColor;
 
+	int tmp = 0;
+
 	while(isRunning){
 		glClearColor(155.0f/255.0f, 136.0f/255.0f, 120.0f/255.0f, 1.0f);	
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -506,11 +508,9 @@ int main(){
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 		//draw grid
-		
 		gridShader.use();
 		glBindVertexArray(gridVAO);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gridEBO);
-		
 		glDrawElements(GL_TRIANGLES, gridLength, GL_UNSIGNED_INT, 0);
 		
 		//draw block
