@@ -168,7 +168,6 @@ void addRandomSquare(std::vector<Square> &squares, std::vector<std::vector<bool>
 				cnt++;
 			}
 
-			std::cout << "random run: " << cnt << std::endl;
 			Square square(randX, randY);
 			squares.push_back(square);
 			updateGrid(grid, squares);
@@ -254,8 +253,6 @@ void moveLeft(std::vector<Square> &squares, std::vector<std::vector<bool>> &grid
 void moveRight(std::vector<Square> &squares, std::vector<std::vector<bool>> &grid){
 	bool moved = false;
 	sortSquares(squares, RIGHT);
-	std::cout << "size after right sort: " << squares.size() << std::endl;
-	std::cout << "size after right sort: " << squares[0].x << std::endl;
 	for(int i = 0; i < squares.size(); i++){
 		while(squares[i].x < 3 && !grid[squares[i].x+1][squares[i].y]){
 			squares[i].x++;
@@ -306,7 +303,6 @@ int main(){
 			square.addSquareToGrid(gridVertices, gridIndices, 0);
 		}
 	
-
 	int randX = rand() % 4;
 	int randY = rand() % 4;
 	Square square(randX, randY);
@@ -364,15 +360,12 @@ int main(){
 
 	glBindVertexArray(blockVAO);
 	glBindBuffer(GL_ARRAY_BUFFER, blockVBO);
-	//glBufferData(GL_ARRAY_BUFFER, blockVertices.size() * sizeof(glm::vec3), blockVertices.data(), GL_DYNAMIC_DRAW);
 	glBufferData(GL_ARRAY_BUFFER, GRID_SIZE*GRID_SIZE*4 * sizeof(glm::vec3), blockVertices.data(), GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, blockEBO);
-	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, blockIndices.size() * sizeof(glm::uvec3), blockIndices.data(), GL_DYNAMIC_DRAW);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, GRID_SIZE*GRID_SIZE*2 * sizeof(glm::uvec3), blockIndices.data(), GL_DYNAMIC_DRAW);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
-
 
 	Shader gridShader("./shaders/gridShader.ver", "./shaders/gridShader.frag");
 	Shader blockShader("./shaders/blockShader.ver", "./shaders/blockShader.frag");
@@ -446,9 +439,6 @@ int main(){
 						default:
 							break;	
 					}
-					for(int i = 0; i < squares.size(); i++)
-						std::cout << "Square x: " << squares[i].x << "Square y: " << squares[i].y << "Square number: " << squares[i].getNumber() << std::endl;
-					std::cout << " " << std::endl;
 				default:
 					break;	
 			}	
@@ -480,7 +470,6 @@ int main(){
 		blockLength = (GLuint)blockIndices.size() * 3;
 		blockShader.use();
 
-		//glUniform3f(blockColorLocation, 0.5f, 0.5f, 0.3f);
 		glUniform1iv(blockNumbersLocation, 16, blockNumbers);
 
 		glBindVertexArray(blockVAO);
